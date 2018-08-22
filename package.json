@@ -1,0 +1,27 @@
+{
+  "name": "booltable",
+  "version": "0.1.0",
+  "description": "Functional alternatives to complex and incongruent if/else statements",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "jest --env=node",
+    "build": "./node_modules/.bin/tsc",
+    "postinstall": "npm run build",
+    "bundle": "webpack --config webpack.config.js"
+  },
+  "author": "Robert Gerald Porter <rob@weeverapps.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "23.3.1",
+    "awesome-typescript-loader": "5.2.0",
+    "jest": "23.5.0",
+    "source-map-loader": "0.2.4",
+    "ts-jest": "23.1.4",
+    "typescript": "3.0.1",
+    "webpack": "4.17.1",
+    "webpack-cli": "3.1.0"
+  },
+  "dependencies": {
+    "simple-maybe": "1.0.1"
+  }
+}
