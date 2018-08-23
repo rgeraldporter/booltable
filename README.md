@@ -12,30 +12,39 @@ It exposes two APIs: `Truth` and `Decision`. These roughly match up to being tru
 import { Truth, Decision } from 'booltable';
 
 // simplest: [Condition, Result]
-const makeDecision = (x) => Decision.of([
-    [x > 1, 2],
-    [x === 1, 3],
-    [x === 0, 3.5]
-    [!x, 4],
-    // default, always true
-    [true, 10]
-]);
+const makeDecision = x =>
+    Decision.of([
+        [x > 1, 2],
+        [x === 1, 3],
+        [x === 0, 3.5],
+        [(!x, 4)],
+        // default, always true
+        [true, 10]
+    ]);
 
 // result1 === 2;
 // uses default 'first', meaning first true result returns
-const result1 = makeDecision(2).run().join();
+const result1 = makeDecision(2)
+    .run()
+    .join();
 
 // result2 === [3.5, 4, 10];
 // 'any' means any conditions are true, returns array of results
-const result2 = makeDecision(0).run('any').join();
+const result2 = makeDecision(0)
+    .run('any')
+    .join();
 
 // result3 === 10
 // 'last' means last true result returns
-const result3 = makeDecision(101).run('last').join();
+const result3 = makeDecision(101)
+    .run('last')
+    .join();
 
 // result4 === [3.5, 4];
 // '2' means first two true conditions -- this can be given number
-const result4 = makeDecision(0).run(2).join();
+const result4 = makeDecision(0)
+    .run(2)
+    .join();
 
 const data = {
     aa: 1,
@@ -47,37 +56,148 @@ const data = {
 
 const conditions = ([a, b, c]) => Truth.of([a, b, c]);
 
+// result5 === true
 // .or() means apply "OR" to these conditions, since data.aa is greater than 0, this returns true
 // OR means at least one is true
-const result5 = conditions([data.aa > 0, data.bb === true, data.cc.length]).or();
+const result5 = conditions([
+    data.aa > 0,
+    data.bb === true,
+    data.cc.length
+]).or();
 
+// result6 === false
 // .xor() means apply "XOR" to these conditions, since all items are true, this would return false
 // XOR means at least one is true and at least one is false
-const result6 = conditions([data.aa > 0, data.bb === true, data.cc.length]).or();
+const result6 = conditions([
+    data.aa > 0,
+    data.bb === true,
+    data.cc.length
+]).or();
 
+// result7 === false
 // .nor() means apply "NOR" to these conditions, since all items are true, this would return false
 // NOR means all are false
-const result7 = conditions([data.aa > 0, data.bb === true, data.cc.length]).nor();
+const result7 = conditions([
+    data.aa > 0,
+    data.bb === true,
+    data.cc.length
+]).nor();
 
+// result8 === true
 // .and() means apply "AND" to these conditions, since all items are true, this would return true
 // AND means all are true
-const result7 = conditions([data.aa > 0, data.bb === true, data.cc.length]).nor();
+const result8 = conditions([
+    data.aa > 0,
+    data.bb === true,
+    data.cc.length
+]).nor();
 
 // these can be combined!
-const makeDecision2 = (x) => Decision.of([
-    [Truth.of([x > 1, x < 0]).or(), 2], // is greater than 1 or less than 0
-    [Truth.of([x !== 0, typeof x === 'string']).nor(), 3], // is not 0 and not a string
-    // default, always true
-    [true, 10]
-]);
+const makeDecision2 = x =>
+    Decision.of([
+        [Truth.of([x > 1, x < 0]).or(), 2], // is greater than 1 or less than 0
+        [Truth.of([x !== 0, typeof x === 'string']).nor(), 3], // is not 0 and not a string
+        // default, always true
+        [true, 10]
+    ]);
 
 // ... and so on
+```
+
+## Truth Table
+
+This is an example of how `Truth` can be used like a truth table, using the methods provided.
+
+```js
+const a = 2;
+const b = 3;
+const c = 15;
+const d = 150;
+
+const logic1 = Truth.of([a > 11, b === 2, !c, d - 1 >= 100]);
+const logic2 = Truth.of([a < b, b !== 4, c > a, d < 1000]);
+const logic3 = Truth.of([a < b, b === 4, c === a, d > 1000]);
+```
+
+| const  | I      | II      | III     | IV             | .and() | .or() | .nor() | .xor() |
+| ------ | ------ | ------- | ------- | -------------- | ------ | ----- | ------ | ------ |
+| logic1 | a > 11 | b === 2 | !c      | (d - 1) >= 100 | false  | true  | false  | true   |
+| logic2 | a < b  | b !== 4 | c > a   | d < 1000       | true   | true  | false  | false  |
+| logic3 | a < b  | b === 4 | c === a | d > 1000       | false  | false | true   | false  |
+
+## Decision Table
+
+This is an example of how `Decision` can be like a decision table.
+
+```js
+const makeDecision = x =>
+    Decision.of([
+        [x > 1, warn('reading is too high')],
+        [x === 1, notice('things look good')],
+        [x === 0, warn('reading is zero')],
+        [x === undefined, error('no reading found')],
+        // default, always true
+        [true, error('reading is out of range')]
+    ]);
+```
+
+| condition 1     | action                           |
+| --------------- | -------------------------------- |
+| x > 1           | warn('reading is too high')      |
+| x === 1         | notice('things look good')       |
+| !x              | warn('reading is zero')          |
+| x === 0         | warn('reading is zero')          |
+| x === undefined | error('no reading found')        |
+| default         | error('reading is out of range') |
+
+Of course, this is _very_ basic. One can the use `Truth` in combination to identify multiple conditions.
+
+```js
+const cond1 = ([x, y, z]) => Truth.of([x > 1, y > 1, z > 1]).and();
+const cond2 = ([x, y, z]) => Truth.of([x > 1, y < 1, z < 1]).and();
+const cond3 = ([x, y, z]) => Truth.of([x < 1, y < 1, z < 1]).and();
+
+const makeDecision = ([x, y, z]) =>
+    Decision.of([
+        [cond1([x, y, z]), warn('all readings high')],
+        [cond2([x, y, z]), warn('x is high')],
+        [cond3([x, y, z]), notice('all readings in normal range')]
+    ]);
+
+makeDecison([1.25, 0.5, 0.1]).run();
+// result runs `warn('x is high')`
 
 ```
 
+Note that one could also write the above with three items in each row:
+
+```js
+const makeDecisionExpanded = ([x, y, z]) =>
+    Decision.of([
+        // condition(s), fn, argument
+        [cond1([x, y, z]), warn, 'all readings high'],
+        [cond2([x, y, z]), warn, 'x is high'],
+        [cond3([x, y, z]), notice, 'all readings in normal range']
+    ]);
+```
+
+Both result in a decision table like this:
+
+| condition 1 | condition 2 | condition 3 | action (AND)                           |
+| ----------- | ----------- | ----------- | -------------------------------------- |
+| x > 1       | y > 1       | z > 1       | warn('all readings high')              |
+| x > 1       | y < 1       | z < 1       | warn('x is high')                      |
+| x < 1       | y < 1       | z < 1       | notice('all readings in normal range') |
+
+This is a very basic example of a decision table, and is only using `.and()` in the calculation of true/false. One could have much more complex logic.
+
+## More examples
+
 Some more examples can be lifted from the unit tests.
 
-More info forthcoming soon!
+## Early days yet...
+
+This just got started. More documentation coming soon!
 
 ## Development
 
