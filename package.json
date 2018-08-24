@@ -1,12 +1,13 @@
 {
   "name": "booltable",
-  "version": "0.1.5",
+  "version": "0.1.9",
   "description": "Functional alternatives to complex and incongruent if/else statements",
   "main": "./dist/index.js",
   "scripts": {
     "test": "jest --env=node",
     "build": "./node_modules/.bin/tsc",
-    "postinstall": "npm run build",
+    "build-production": "./node_modules/.bin/tsc --build ./tsconfig-prod.json",
+    "postinstall": "npm run build-production",
     "bundle": "webpack --config webpack.config.js"
   },
   "author": "Robert Gerald Porter <rob@weeverapps.com>",
