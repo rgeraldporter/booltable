@@ -171,6 +171,17 @@ const exportDecision: DecisionMonadConstructor = {
 const findIfCond = (a: string, x: BoolTable) =>
     x.find((y: TupleBoolTableRow) => (y[0] === a ? true : false));
 
+const isAreBTFn = (x: BoolTable) => (a: string): Boolean =>
+    Maybe.of(findIfCond(a, x))
+        .map((y: TupleBoolTableRow) => y.slice(-1).pop())
+        .fork(
+            _ => {
+                console.warn('`if` condition not found: ', a);
+                return false;
+            },
+            y => Boolean(y)
+        );
+
 const BoolTable = (x: BoolTable): BoolTableMonad => ({
     map: (f: Function): BoolTableMonad => BoolTable(f(x)),
     chain: (f: Function): any => f(x),
@@ -186,16 +197,8 @@ const BoolTable = (x: BoolTable): BoolTableMonad => ({
     tail: (): TupleBoolTableRow | Array<void> =>
         Array.isArray(x) && x.length ? x[x.length - 1] : [],
     isEmpty: (): Boolean => Boolean(!Array.isArray(x) || x.length === 0),
-    if: (a: string): Boolean =>
-        Maybe.of(findIfCond(a, x))
-            .map((y: TupleBoolTableRow) => y.slice(-1).pop())
-            .fork(
-                _ => {
-                    console.warn('`if` condition not found: ', a);
-                    return false;
-                },
-                y => Boolean(y)
-            )
+    is: isAreBTFn(x),
+    are: isAreBTFn(x)
 });
 
 const boolTableTypeError = (x: any): BoolTableMonad => {

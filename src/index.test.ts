@@ -287,21 +287,21 @@ describe('The BoolTable monad', () => {
             ['these are also false', Truth.of([false, false]).and()],
             ['these are also true', Truth.of([true, false, true]).xor()],
             ['that is also true as well', Truth.of([false, false, false]).nor()],
-            ['we need only a boolean', true],
-            ['non-boolean values should return as Boolean', 1]
+            ['it true that we need only a boolean', true],
+            ['non-boolean values returning as Boolean', 1]
         ]);
 
-        const shouldBeTrue = tt.if('these things are true');
-        const shouldBeFalse = tt.if('these things are false');
+        const shouldBeTrue = tt.are('these things are true');
+        const shouldBeFalse = tt.are('these things are false');
 
         expect(shouldBeTrue).toBe(true);
         expect(shouldBeFalse).toBe(false);
 
-        expect(tt.if('these are also false')).toBe(false);
-        expect(tt.if('these are also true')).toBe(true);
-        expect(tt.if('that is also true as well')).toBe(true);
-        expect(tt.if('we need only a boolean')).toBe(true);
-        expect(tt.if('non-boolean values should return as Boolean')).toBe(true);
+        expect(tt.are('these are also false')).toBe(false);
+        expect(tt.are('these are also true')).toBe(true);
+        expect(tt.is('that is also true as well')).toBe(true);
+        expect(tt.is('it true that we need only a boolean')).toBe(true);
+        expect(tt.are('non-boolean values returning as Boolean')).toBe(true);
     });
 });
 

@@ -9,7 +9,7 @@ It exposes two APIs: `Truth` and `Decision`. These roughly match up to being tru
 ## Example
 
 ```js
-import { Truth, Decision } from 'booltable';
+import { Truth, Decision, BoolTable } from 'booltable';
 
 // simplest: [Condition, Result]
 const makeDecision = x =>
@@ -125,6 +125,25 @@ const logic3 = Truth.of([a < b, b === 4, c === a, d > 1000]);
 | logic2 | a < b  | b !== 4 | c > a   | d < 1000       | true   | true  | false  | false  |
 | logic3 | a < b  | b === 4 | c === a | d > 1000       | false  | false | true   | false  |
 
+Better yet, this can be also created using a more expressive API, `BoolTable`.
+
+```js
+const tt = BoolTable.of([
+    ['logic1 true with and', logic1.and()],
+    ['logic2 true with and', logic2.and()],
+    ['logic3 true with xor', logic3.xor()]
+]);
+
+// false
+tt.is('logic1 true with and');
+
+// true
+tt.is('logic2 true with and');
+
+// false
+tt.is('logic3 true with xor');
+```
+
 ## Decision Table
 
 This is an example of how `Decision` can be like a decision table.
@@ -153,6 +172,7 @@ const makeDecision = x =>
 Of course, this is _very_ basic. One can the use `Truth` in combination to identify multiple conditions.
 
 ```js
+// we use ([x, y, z]) so the fns are still memoizable even though there are multiple params
 const cond1 = ([x, y, z]) => Truth.of([x > 1, y > 1, z > 1]).and();
 const cond2 = ([x, y, z]) => Truth.of([x > 1, y < 1, z < 1]).and();
 const cond3 = ([x, y, z]) => Truth.of([x < 1, y < 1, z < 1]).and();
@@ -166,7 +186,6 @@ const makeDecision = ([x, y, z]) =>
 
 makeDecison([1.25, 0.5, 0.1]).run();
 // result runs `warn('x is high')`
-
 ```
 
 Note that one could also write the above with three items in each row:
@@ -181,7 +200,27 @@ const makeDecisionExpanded = ([x, y, z]) =>
     ]);
 ```
 
-Both result in a decision table like this:
+Better yet, let's add some expressivity:
+
+```js
+const bt = ([x, y, z]) =>
+    BoolTable.of([
+        ['all the readings high', cond1([x, y, z])],
+        ['x high', cond2([x, y, z])],
+        ['things normal', cond3([x, y, z])]
+    ]);
+
+const makeDecisionExpanded = (vals) => // vals === Array [x, y, z], more readable and still memoizable
+    Decision.of([
+        // condition(s), fn, argument
+        // are/is interchangable
+        [bt(vals).are('all the readings high'), warn, 'all readings high'],
+        [bt(vals).is('x high'), warn, 'x is high'],
+        [bt(vals).are('things normal'), notice, 'all readings in normal range']
+    ]);
+```
+
+All these result in a decision table like this:
 
 | condition 1 | condition 2 | condition 3 | action (AND)                           |
 | ----------- | ----------- | ----------- | -------------------------------------- |
