@@ -1,11 +1,13 @@
 import { Maybe } from 'simple-maybe';
-import { Decision, Truth } from './index';
+import { Decision, Truth, BoolTable } from './index';
 import {
     DecisionTable,
     DecisionMonad,
     TupleConditionalTableRow,
     TupleConditionalTable,
-    TruthMonad
+    TruthMonad,
+    BoolTableMonad,
+    TupleBoolTableRow
 } from './types';
 
 describe('The Decision monad', () => {
@@ -199,11 +201,11 @@ describe('The Truth monad', () => {
         const f = (n: Array<boolean>): TruthMonad =>
             Truth.of(n.concat([true, false, true, true]));
 
-        // 3. m = Decision.of(a); m.chain(f).chain(g) ==== m.chain(x => f(x).chain(g))
-        const associativity1 = Decision.of(a)
+        // 3. m = Truth.of(a); m.chain(f).chain(g) ==== m.chain(x => f(x).chain(g))
+        const associativity1 = Truth.of(a)
             .chain(g)
             .chain(f);
-        const associativity2 = Decision.of(a).chain((x: Array<boolean>) =>
+        const associativity2 = Truth.of(a).chain((x: Array<boolean>) =>
             g(x).chain(f)
         );
 
@@ -220,3 +222,101 @@ describe('The Truth monad', () => {
         expect(myBool.nor()).toBe(false);
     });
 });
+
+
+describe('The BoolTable monad', () => {
+    xit('should satisfy the first monad law of left identity', () => {
+        const a: TupleBoolTableRow = ['this', true];
+
+        // more complex than usual as this is a typed monad; need a function that adheres to type restrictions
+        const f = (n: TupleBoolTableRow): BoolTableMonad =>
+            BoolTable.of(
+                n.concat(['stuff', false])
+            );
+
+        // 1. unit = BoolTable; unit(x).chain(f) ==== f(x); BoolTable(x).chain(f) ==== f(x)
+        const leftIdentity1 = BoolTable.of(a).chain(f);
+        const leftIdentity2 = f(a);
+
+        expect(leftIdentity1.join()).toEqual(leftIdentity2.join());
+
+        const g = (n: TupleBoolTableRow): BoolTableMonad =>
+            BoolTable.of(n.concat(['things', false]));
+
+        // 1. unit = BoolTable; unit(x).chain(f) ==== f(x); BoolTable(x).chain(f)
+        const leftIdentity3 = BoolTable.of(a).chain(g);
+        const leftIdentity4 = g(a);
+
+        expect(leftIdentity3.join()).toEqual(leftIdentity4.join());
+    });
+
+    it('should satisfy the second monad law of right identity', () => {
+        const a: TupleBoolTableRow = ['that', false];
+
+        const rightIdentity1 = BoolTable.of(a).chain(BoolTable.of);
+        const rightIdentity2 = BoolTable.of(a);
+
+        // 2. unit = BoolTable; m = BoolTable.of(a); m.chain(unit) ==== m;
+        expect(rightIdentity1.join()).toEqual(rightIdentity2.join());
+    });
+
+    it('should satisfy the third monad law of associativity', () => {
+        const a: TupleBoolTableRow = ['the other thing', false];
+
+        const g = (n: TupleBoolTableRow): BoolTableMonad =>
+            BoolTable.of(n.concat(['somesuch', false]));
+        const f = (n: TupleBoolTableRow): BoolTableMonad =>
+            BoolTable.of(n.concat(['thingiemajig', true]));
+
+        // 3. m = BoolTable.of(a); m.chain(f).chain(g) ==== m.chain(x => f(x).chain(g))
+        const associativity1 = BoolTable.of(a)
+            .chain(g)
+            .chain(f);
+        const associativity2 = BoolTable.of(a).chain((x: TupleBoolTableRow) =>
+            g(x).chain(f)
+        );
+
+        expect(associativity1.join()).toEqual(associativity2.join());
+    });
+
+    it('should be able to return the boolean value of the table row', () => {
+
+        const tt = BoolTable.of([
+            ['these things are true', Truth.of([true]).and()],
+            ['these things are false', Truth.of([true]).xor()],
+            ['these are also false', Truth.of([false, false]).and()],
+            ['these are also true', Truth.of([true, false, true]).xor()],
+            ['that is also true as well', Truth.of([false, false, false]).nor()],
+            ['we need only a boolean', true],
+            ['non-boolean values should return as Boolean', 1]
+        ]);
+
+        const shouldBeTrue = tt.if('these things are true');
+        const shouldBeFalse = tt.if('these things are false');
+
+        expect(shouldBeTrue).toBe(true);
+        expect(shouldBeFalse).toBe(false);
+
+        expect(tt.if('these are also false')).toBe(false);
+        expect(tt.if('these are also true')).toBe(true);
+        expect(tt.if('that is also true as well')).toBe(true);
+        expect(tt.if('we need only a boolean')).toBe(true);
+        expect(tt.if('non-boolean values should return as Boolean')).toBe(true);
+    });
+});
+
+/*
+const tt = BoolTable.of([
+    ['these things are true', Truth.of(true).and()],
+    ['these things are false', Truth.of(true).xor()]
+])
+
+const myFnCond: DecisionMonad = Decision.of([
+    [tt.if('these things are true'), (x: number) => x, 1],
+    [false, (x: number) => x, 2],
+    [true, (x: number) => x + 1, 2],
+    [true, (x: number) => x * 2, 2],
+    [false, (x: number) => x, 3],
+    [true, timesThree, 3]
+]);
+*/

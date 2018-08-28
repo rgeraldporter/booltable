@@ -10,7 +10,11 @@ import {
     ConditionalRow,
     DecisionMonadConstructor,
     TruthMonadConstructor,
-    RunType
+    RunType,
+    BoolTable,
+    BoolTableMonad,
+    TupleBoolTableRow,
+    BoolTableMonadConstructor
 } from './types';
 
 import { Maybe } from 'simple-maybe';
@@ -149,7 +153,6 @@ const decisionTypeError = (x: any): DecisionMonad => {
         x
     );
 
-    // this will return data as Nothing() when processed
     return Decision([[true, null]]);
 };
 
@@ -165,4 +168,56 @@ const exportDecision: DecisionMonadConstructor = {
     of: DecisionOf
 };
 
-export { exportDecision as Decision, exportTruth as Truth };
+const findIfCond = (a: string, x: BoolTable) =>
+    x.find((y: TupleBoolTableRow) => (y[0] === a ? true : false));
+
+const BoolTable = (x: BoolTable): BoolTableMonad => ({
+    map: (f: Function): BoolTableMonad => BoolTable(f(x)),
+    chain: (f: Function): any => f(x),
+    ap: (y: Monad): Monad => y.map(x),
+    inspect: (): string => `BoolTable(${x})`,
+    join: (): BoolTable => x,
+    concat: (o: BoolTableMonad): BoolTableMonad =>
+        o.chain(
+            (r: any): BoolTableMonad => BoolTable((x as BoolTable).concat(r))
+        ),
+    head: (): TupleBoolTableRow | Array<void> =>
+        Array.isArray(x) && x.length ? x[0] : [],
+    tail: (): TupleBoolTableRow | Array<void> =>
+        Array.isArray(x) && x.length ? x[x.length - 1] : [],
+    isEmpty: (): Boolean => Boolean(!Array.isArray(x) || x.length === 0),
+    if: (a: string): Boolean =>
+        Maybe.of(findIfCond(a, x))
+            .map((y: TupleBoolTableRow) => y.slice(-1).pop())
+            .fork(
+                _ => {
+                    console.warn('`if` condition not found: ', a);
+                    return false;
+                },
+                y => Boolean(y)
+            )
+});
+
+const boolTableTypeError = (x: any): BoolTableMonad => {
+    console.error(
+        'BoolTable must be passed parameters that adhere to the documented type. Value that was passed:',
+        x
+    );
+
+    return BoolTable([['there was a BoolTable type error', true]]);
+};
+
+const BoolTableOf = (x: BoolTable): BoolTableMonad =>
+    Array.isArray(x) && Array.isArray(x[0]) && x[0].length === 2
+        ? BoolTable(x)
+        : boolTableTypeError(x);
+
+const exportBoolTable: BoolTableMonadConstructor = {
+    of: BoolTableOf
+};
+
+export {
+    exportDecision as Decision,
+    exportTruth as Truth,
+    exportBoolTable as BoolTable
+};
