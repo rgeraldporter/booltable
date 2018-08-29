@@ -59,8 +59,8 @@ export interface BoolTableMonad extends Monad {
     head: Function;
     tail: Function;
     isEmpty: Function;
-    is: Function;
-    are: Function;
+    q: Function;
+    query: Function;
 }
 
 export interface MonadConstructor {

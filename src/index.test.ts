@@ -282,26 +282,26 @@ describe('The BoolTable monad', () => {
     it('should be able to return the boolean value of the table row', () => {
 
         const tt = BoolTable.of([
-            ['these things are true', Truth.of([true]).and()],
-            ['these things are false', Truth.of([true]).xor()],
-            ['these are also false', Truth.of([false, false]).and()],
-            ['these are also true', Truth.of([true, false, true]).xor()],
-            ['that is also true as well', Truth.of([false, false, false]).nor()],
-            ['it true that we need only a boolean', true],
-            ['non-boolean values returning as Boolean', 1]
+            ['are these things true?', Truth.of([true]).and()],
+            ['are these things false?', Truth.of([true]).xor()],
+            ['are these also false?', Truth.of([false, false]).and()],
+            ['are these also true?', Truth.of([true, false, true]).xor()],
+            ['is that is also true as well?', Truth.of([false, false, false]).nor()],
+            ['is it true that we need only a Boolean?', true],
+            ['are non-Boolean values returning as Boolean?', 1]
         ]);
 
-        const shouldBeTrue = tt.are('these things are true');
-        const shouldBeFalse = tt.are('these things are false');
+        const shouldBeTrue = tt.q('are these things true?');
+        const shouldBeFalse = tt.q('are these things false?');
 
         expect(shouldBeTrue).toBe(true);
         expect(shouldBeFalse).toBe(false);
 
-        expect(tt.are('these are also false')).toBe(false);
-        expect(tt.are('these are also true')).toBe(true);
-        expect(tt.is('that is also true as well')).toBe(true);
-        expect(tt.is('it true that we need only a boolean')).toBe(true);
-        expect(tt.are('non-boolean values returning as Boolean')).toBe(true);
+        expect(tt.q('are these also false?')).toBe(false);
+        expect(tt.q('are these also true?')).toBe(true);
+        expect(tt.q('is that is also true as well?')).toBe(true);
+        expect(tt.q('is it true that we need only a Boolean?')).toBe(true);
+        expect(tt.q('are non-Boolean values returning as Boolean?')).toBe(true);
     });
 });
 

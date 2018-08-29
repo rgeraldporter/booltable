@@ -171,7 +171,7 @@ const exportDecision: DecisionMonadConstructor = {
 const findIfCond = (a: string, x: BoolTable) =>
     x.find((y: TupleBoolTableRow) => (y[0] === a ? true : false));
 
-const isAreBTFn = (x: BoolTable) => (a: string): Boolean =>
+const queryBTFn = (x: BoolTable) => (a: string): Boolean =>
     Maybe.of(findIfCond(a, x))
         .map((y: TupleBoolTableRow) => y.slice(-1).pop())
         .fork(
@@ -197,8 +197,8 @@ const BoolTable = (x: BoolTable): BoolTableMonad => ({
     tail: (): TupleBoolTableRow | Array<void> =>
         Array.isArray(x) && x.length ? x[x.length - 1] : [],
     isEmpty: (): Boolean => Boolean(!Array.isArray(x) || x.length === 0),
-    is: isAreBTFn(x),
-    are: isAreBTFn(x)
+    q: queryBTFn(x),
+    query: queryBTFn(x)
 });
 
 const boolTableTypeError = (x: any): BoolTableMonad => {

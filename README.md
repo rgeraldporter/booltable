@@ -4,7 +4,7 @@
 
 BoolTable is an expressive alternative for complex and incongruous if/else conditional structures in Javascript.
 
-It exposes two APIs: `Truth` and `Decision`. These roughly match up to being truth tables and decision tables.
+It exposes three APIs: `Truth`, `Decision`, and `BoolTable`. These roughly match up to being variations on truth tables and decision tables.
 
 ## Example
 
@@ -135,13 +135,13 @@ const tt = BoolTable.of([
 ]);
 
 // false
-tt.is('logic1 true with and');
+tt.q('logic1 true with and');
 
 // true
-tt.is('logic2 true with and');
+tt.q('logic2 true with and');
 
 // false
-tt.is('logic3 true with xor');
+tt.q('logic3 true with xor');
 ```
 
 ## Decision Table
@@ -214,9 +214,9 @@ const makeDecisionExpanded = (vals) => // vals === Array [x, y, z], more readabl
     Decision.of([
         // condition(s), fn, argument
         // are/is interchangable
-        [bt(vals).are('all the readings high'), warn, 'all readings high'],
-        [bt(vals).is('x high'), warn, 'x is high'],
-        [bt(vals).are('things normal'), notice, 'all readings in normal range']
+        [bt(vals).q('all the readings high'), warn, 'all readings high'],
+        [bt(vals).q('x high'), warn, 'x is high'],
+        [bt(vals).q('things normal'), notice, 'all readings in normal range']
     ]);
 ```
 
