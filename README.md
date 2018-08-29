@@ -129,19 +129,19 @@ Better yet, this can be also created using a more expressive API, `BoolTable`.
 
 ```js
 const tt = BoolTable.of([
-    ['logic1 true with and', logic1.and()],
-    ['logic2 true with and', logic2.and()],
-    ['logic3 true with xor', logic3.xor()]
+    ['is logic1 true with and?', logic1.and()],
+    ['is logic2 true with and?', logic2.and()],
+    ['is logic3 true with xor?', logic3.xor()]
 ]);
 
 // false
-tt.q('logic1 true with and');
+tt.q('is logic1 true with and?');
 
 // true
-tt.q('logic2 true with and');
+tt.q('is logic2 true with and?');
 
 // false
-tt.q('logic3 true with xor');
+tt.q('is logic3 true with xor?');
 ```
 
 ## Decision Table
@@ -205,18 +205,18 @@ Better yet, let's add some expressivity:
 ```js
 const bt = ([x, y, z]) =>
     BoolTable.of([
-        ['all the readings high', cond1([x, y, z])],
-        ['x high', cond2([x, y, z])],
-        ['things normal', cond3([x, y, z])]
+        ['are all the readings high?', cond1([x, y, z])],
+        ['is x high?', cond2([x, y, z])],
+        ['are things normal?', cond3([x, y, z])]
     ]);
 
 const makeDecisionExpanded = (vals) => // vals === Array [x, y, z], more readable and still memoizable
     Decision.of([
         // condition(s), fn, argument
         // are/is interchangable
-        [bt(vals).q('all the readings high'), warn, 'all readings high'],
-        [bt(vals).q('x high'), warn, 'x is high'],
-        [bt(vals).q('things normal'), notice, 'all readings in normal range']
+        [bt(vals).q('are all the readings high?'), warn, 'all readings high'],
+        [bt(vals).q('is x high?'), warn, 'x is high'],
+        [bt(vals).q('are things normal?'), notice, 'all readings in normal range']
     ]);
 ```
 
