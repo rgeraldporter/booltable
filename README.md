@@ -230,6 +230,28 @@ All these result in a decision table like this:
 
 This is a very basic example of a decision table, and is only using `.and()` in the calculation of true/false. One could have much more complex logic.
 
+## Truth as ternary
+
+You can also use `Truth` for a ternary condtion, using one of the various `fork*` functions:
+
+`forkOr`, `forkAnd`, `forkXor`, `forkNor` -- each take two functions as parameters, the first being the `false` condition, the second being the `true` condition.
+
+```js
+// second function is the one that will run here
+Truth.of([true, true, true])
+    .forkAnd(
+        () => console.error('false path'),
+        () => console.log('true path')
+    );
+
+// first function will run here
+Truth.of([false, true])
+    .forkNor(
+        () => console.log('false path'),
+        () => console.error('true path')
+    );
+```
+
 ## More examples
 
 Some more examples can be lifted from the unit tests.

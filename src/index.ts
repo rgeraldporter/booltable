@@ -19,6 +19,18 @@ import {
 
 import { Maybe } from 'simple-maybe';
 
+const truthOr = (x: Array<boolean>): boolean =>
+    Array.isArray(x) && x.length ? x.some((a: boolean) => a) : false;
+
+const truthAnd = (x: Array<boolean>): boolean =>
+    Array.isArray(x) && x.length ? x.every((a: boolean) => a) : false;
+
+const truthXor = (x: Array<boolean>): boolean =>
+    Array.isArray(x) && x.length ? new Set(x).size > 1 : false;
+
+const truthNor = (x: Array<boolean>): boolean =>
+    Array.isArray(x) && x.length ? x.every((a: boolean) => !a) : false;
+
 const Truth = (x: Array<boolean>): TruthMonad => ({
     map: (f: Function): TruthMonad => Truth(f(x)),
     chain: (f: Function): any => f(x),
@@ -32,14 +44,14 @@ const Truth = (x: Array<boolean>): TruthMonad => ({
     tail: (): boolean | Array<boolean> =>
         Array.isArray(x) && x.length ? x[x.length - 1] : [],
     isEmpty: (): Boolean => Boolean(!Array.isArray(x) || x.length === 0),
-    or: (): boolean =>
-        Array.isArray(x) && x.length ? x.some((a: boolean) => a) : false,
-    and: (): boolean =>
-        Array.isArray(x) && x.length ? x.every((a: boolean) => a) : false,
-    nor: (): boolean =>
-        Array.isArray(x) && x.length ? x.every((a: boolean) => !a) : false,
-    xor: (): boolean =>
-        Array.isArray(x) && x.length ? new Set(x).size > 1 : false
+    or: (): boolean => truthOr(x),
+    and: (): boolean => truthAnd(x),
+    nor: (): boolean => truthNor(x),
+    xor: (): boolean => truthXor(x),
+    forkOr: (f: Function, g: Function): any => (truthOr(x) ? g() : f()),
+    forkAnd: (f: Function, g: Function): any => (truthAnd(x) ? g() : f()),
+    forkXor: (f: Function, g: Function): any => (truthXor(x) ? g() : f()),
+    forkNor: (f: Function, g: Function): any => (truthNor(x) ? g() : f())
 });
 
 const truthTypeError = (x: any): TruthMonad => {

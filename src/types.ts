@@ -15,6 +15,10 @@ export interface TruthMonad extends Monad {
     and: () => boolean;
     xor: () => boolean;
     nor: () => boolean;
+    forkOr: (f: Function, g: Function) => any;
+    forkAnd: (f: Function, g: Function) => any;
+    forkXor: (f: Function, g: Function) => any;
+    forkNor: (f: Function, g: Function) => any;
 }
 
 export interface DecisionMonad extends Monad {

@@ -122,10 +122,7 @@ describe('The Decision monad', () => {
         const mock = jest.spyOn(console, 'error');
 
         // @ts-ignore ignore because this is testing bad behaviour
-        const myBadCond2 = Decision.of([
-            [false],
-            [true]
-        ]);
+        const myBadCond2 = Decision.of([[false], [true]]);
 
         expect(console.error).toBeCalledWith(
             'Decision must be passed parameters that adhere to the documented type. Value that was passed:',
@@ -136,7 +133,6 @@ describe('The Decision monad', () => {
     });
 
     it('should operate with Truth monads', () => {
-
         const fullT = Truth.of([false, false, true]).xor();
         const partialT = Truth.of([false, false]);
 
@@ -163,9 +159,7 @@ describe('The Truth monad', () => {
 
         // more complex than usual as this is a typed monad; need a function that adheres to type restrictions
         const f = (n: Array<boolean>): TruthMonad =>
-            Truth.of(
-                n.concat([false])
-            );
+            Truth.of(n.concat([false]));
 
         // 1. unit = Truth; unit(x).chain(f) ==== f(x); Truth(x).chain(f) ==== f(x)
         const leftIdentity1 = Truth.of(a).chain(f);
@@ -213,7 +207,6 @@ describe('The Truth monad', () => {
     });
 
     it('should be able to handle the correct parameters, and process XOR, OR, AND, NOR', () => {
-
         const myBool = Truth.of([true, true, true, false]);
 
         expect(myBool.and()).toBe(false);
@@ -221,8 +214,53 @@ describe('The Truth monad', () => {
         expect(myBool.or()).toBe(true);
         expect(myBool.nor()).toBe(false);
     });
-});
 
+    it('should be able to fork Left for false and Right for true in any given Fork variant', () => {
+        const myBool1 = Truth.of([true, true, true, false]);
+        const myBool2 = Truth.of([true, true, true]);
+        const myBool3 = Truth.of([false]);
+
+        myBool1.forkAnd(
+            () => expect(true).toBe(true), // pass, right path
+            () => expect(true).toBe(false) // fail, wrong path
+        );
+
+        myBool2.forkAnd(
+            () => expect(true).toBe(false), // fail, wrong path
+            () => expect(true).toBe(true) // pass, right path
+        );
+
+        myBool3.forkOr(
+            () => expect(true).toBe(true), // pass, right path
+            () => expect(true).toBe(false) // fail, wrong path
+        );
+
+        myBool2.forkOr(
+            () => expect(true).toBe(false), // fail, wrong path
+            () => expect(true).toBe(true) // pass, right path
+        );
+
+        myBool1.forkXor(
+            () => expect(true).toBe(false), // fail, wrong path
+            () => expect(true).toBe(true) // pass, right path
+        );
+
+        myBool2.forkXor(
+            () => expect(true).toBe(true), // pass, right path
+            () => expect(true).toBe(false) // fail, wrong path
+        );
+
+        myBool1.forkNor(
+            () => expect(true).toBe(true), // pass, right path
+            () => expect(true).toBe(false) // fail, wrong path
+        );
+
+        myBool3.forkNor(
+            () => expect(true).toBe(false), // fail, wrong path
+            () => expect(true).toBe(true) // pass, right path
+        );
+    });
+});
 
 describe('The BoolTable monad', () => {
     xit('should satisfy the first monad law of left identity', () => {
@@ -230,9 +268,7 @@ describe('The BoolTable monad', () => {
 
         // more complex than usual as this is a typed monad; need a function that adheres to type restrictions
         const f = (n: TupleBoolTableRow): BoolTableMonad =>
-            BoolTable.of(
-                n.concat(['stuff', false])
-            );
+            BoolTable.of(n.concat(['stuff', false]));
 
         // 1. unit = BoolTable; unit(x).chain(f) ==== f(x); BoolTable(x).chain(f) ==== f(x)
         const leftIdentity1 = BoolTable.of(a).chain(f);
@@ -280,13 +316,15 @@ describe('The BoolTable monad', () => {
     });
 
     it('should be able to return the boolean value of the table row', () => {
-
         const tt = BoolTable.of([
             ['are these things true?', Truth.of([true]).and()],
             ['are these things false?', Truth.of([true]).xor()],
             ['are these also false?', Truth.of([false, false]).and()],
             ['are these also true?', Truth.of([true, false, true]).xor()],
-            ['is that is also true as well?', Truth.of([false, false, false]).nor()],
+            [
+                'is that is also true as well?',
+                Truth.of([false, false, false]).nor()
+            ],
             ['is it true that we need only a Boolean?', true],
             ['are non-Boolean values returning as Boolean?', 1]
         ]);
