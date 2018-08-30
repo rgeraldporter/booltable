@@ -62,6 +62,7 @@ const truthTypeError = (x: any): TruthMonad => {
     return Truth([false]);
 };
 
+// @todo make much stricter; more of a sniff test right now
 const TruthOf = (x: Array<boolean>): TruthMonad =>
     Array.isArray(x) ? Truth(x) : truthTypeError(x);
 
@@ -168,6 +169,7 @@ const decisionTypeError = (x: any): DecisionMonad => {
     return Decision([[true, null]]);
 };
 
+// @todo make much stricter; more of a sniff test right now
 const DecisionOf = (x: DecisionTable): DecisionMonad =>
     Array.isArray(x) &&
     Array.isArray(x[0]) &&
@@ -222,6 +224,7 @@ const boolTableTypeError = (x: any): BoolTableMonad => {
     return BoolTable([['there was a BoolTable type error', true]]);
 };
 
+// @todo make much stricter; more of a sniff test right now
 const BoolTableOf = (x: BoolTable): BoolTableMonad =>
     Array.isArray(x) && Array.isArray(x[0]) && x[0].length === 2
         ? BoolTable(x)

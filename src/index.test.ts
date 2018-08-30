@@ -263,6 +263,7 @@ describe('The Truth monad', () => {
 });
 
 describe('The BoolTable monad', () => {
+    // @todo fix this test, needs to be type-appropriate
     xit('should satisfy the first monad law of left identity', () => {
         const a: TupleBoolTableRow = ['this', true];
 
