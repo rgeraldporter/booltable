@@ -19,6 +19,14 @@ export interface TruthMonad extends Monad {
     forkAnd: (f: Function, g: Function) => any;
     forkXor: (f: Function, g: Function) => any;
     forkNor: (f: Function, g: Function) => any;
+    forkOrL: (f: Function) => any;
+    forkOrR: (f: Function) => any;
+    forkAndL: (f: Function) => any;
+    forkAndR: (f: Function) => any;
+    forkXorL: (f: Function) => any;
+    forkXorR: (f: Function) => any;
+    forkNorL: (f: Function) => any;
+    forkNorR: (f: Function) => any;
 }
 
 export interface DecisionMonad extends Monad {

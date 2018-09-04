@@ -225,40 +225,64 @@ describe('The Truth monad', () => {
             () => expect(true).toBe(false) // fail, wrong path
         );
 
+        myBool1.forkAndL(() => expect(true).toBe(true));
+        myBool1.forkAndR(() => expect(true).toBe(false));
+
         myBool2.forkAnd(
             () => expect(true).toBe(false), // fail, wrong path
             () => expect(true).toBe(true) // pass, right path
         );
+
+        myBool2.forkAndL(() => expect(true).toBe(false));
+        myBool2.forkAndR(() => expect(true).toBe(true));
 
         myBool3.forkOr(
             () => expect(true).toBe(true), // pass, right path
             () => expect(true).toBe(false) // fail, wrong path
         );
 
+        myBool3.forkOrL(() => expect(true).toBe(true));
+        myBool3.forkOrR(() => expect(true).toBe(false));
+
         myBool2.forkOr(
             () => expect(true).toBe(false), // fail, wrong path
             () => expect(true).toBe(true) // pass, right path
         );
+
+        myBool2.forkOrL(() => expect(true).toBe(false));
+        myBool2.forkOrR(() => expect(true).toBe(true));
 
         myBool1.forkXor(
             () => expect(true).toBe(false), // fail, wrong path
             () => expect(true).toBe(true) // pass, right path
         );
 
+        myBool1.forkXorL(() => expect(true).toBe(false));
+        myBool1.forkXorR(() => expect(true).toBe(true));
+
         myBool2.forkXor(
             () => expect(true).toBe(true), // pass, right path
             () => expect(true).toBe(false) // fail, wrong path
         );
+
+        myBool2.forkXorL(() => expect(true).toBe(true));
+        myBool2.forkXorR(() => expect(true).toBe(false));
 
         myBool1.forkNor(
             () => expect(true).toBe(true), // pass, right path
             () => expect(true).toBe(false) // fail, wrong path
         );
 
+        myBool1.forkNorL(() => expect(true).toBe(true));
+        myBool1.forkNorR(() => expect(true).toBe(false));
+
         myBool3.forkNor(
             () => expect(true).toBe(false), // fail, wrong path
             () => expect(true).toBe(true) // pass, right path
         );
+
+        myBool3.forkNorL(() => expect(true).toBe(false));
+        myBool3.forkNorR(() => expect(true).toBe(true));
     });
 });
 

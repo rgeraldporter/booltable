@@ -19,6 +19,8 @@ import {
 
 import { Maybe } from 'simple-maybe';
 
+const noop = () => {};
+
 const truthOr = (x: Array<boolean>): boolean =>
     Array.isArray(x) && x.length ? x.some((a: boolean) => a) : false;
 
@@ -49,9 +51,17 @@ const Truth = (x: Array<boolean>): TruthMonad => ({
     nor: (): boolean => truthNor(x),
     xor: (): boolean => truthXor(x),
     forkOr: (f: Function, g: Function): any => (truthOr(x) ? g() : f()),
+    forkOrL: (f: Function): any => (truthOr(x) ? noop() : f() ),
+    forkOrR: (f: Function): any => (truthOr(x) ? f() : noop() ),
     forkAnd: (f: Function, g: Function): any => (truthAnd(x) ? g() : f()),
+    forkAndL: (f: Function): any => (truthAnd(x) ? noop() : f()),
+    forkAndR: (f: Function): any => (truthAnd(x) ? f() : noop()),
     forkXor: (f: Function, g: Function): any => (truthXor(x) ? g() : f()),
-    forkNor: (f: Function, g: Function): any => (truthNor(x) ? g() : f())
+    forkXorL: (f: Function): any => (truthXor(x) ? noop() : f()),
+    forkXorR: (f: Function): any => (truthXor(x) ? f() : noop()),
+    forkNor: (f: Function, g: Function): any => (truthNor(x) ? g() : f()),
+    forkNorL: (f: Function): any => (truthNor(x) ? noop() : f()),
+    forkNorR: (f: Function): any => (truthNor(x) ? f() : noop())
 });
 
 const truthTypeError = (x: any): TruthMonad => {
