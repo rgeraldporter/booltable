@@ -2,9 +2,21 @@
 
 [![Build Status](https://travis-ci.com/rgeraldporter/booltable.svg?branch=master)](https://travis-ci.com/rgeraldporter/booltable)
 
-BoolTable is an expressive alternative for complex and incongruous if/else conditional structures in Javascript.
+BoolTable is an expressive alternative for complex and incongruous if/else conditional structures in Javascript. It allows one to build logical branches not unlike truth tables and decision tables.
 
-It exposes three APIs: `Truth`, `Decision`, and `BoolTable`. These roughly match up to being variations on truth tables and decision tables.
+It exposes three APIs: `Truth`, `Decision`, and `BoolTable`.
+
+### `Truth`
+
+This API is akin to a truth table, which allows one to specify any number of statements that may be true or false, and apply a boolean operator to the collection to achieve a result. For example, a table of three items: `[true, true, true]` would return `true` for an `AND` operator, `false` for a `NOR` operator; a table with `[true, false]` would return `false` for `AND`, and `true` for `XOR`.
+
+### `Decision`
+
+This API is akin to a decision table, which allows one to specify an action when certain conditions evaluate as `true`. One can use `Truth` in concert to allow for complex and very specific decisions.
+
+### `BoolTable`
+
+This API allows one to construct a more expressive conditions in the `Decision` table, for better logging and observatability, and to avoid the necessity of adding comments explaining each complex evaluation.
 
 ## Example
 
