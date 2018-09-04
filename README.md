@@ -16,7 +16,7 @@ This API is akin to a decision table, which allows one to specify an action when
 
 ### `BoolTable`
 
-This API allows one to construct a more expressive conditions in the `Decision` table, for better logging and observatability, and to avoid the necessity of adding comments explaining each complex evaluation.
+This API allows one to construct a more expressive conditions in the `Decision` table, for better logging and observability, and to avoid the necessity of adding comments explaining each complex evaluation.
 
 ## Example
 
