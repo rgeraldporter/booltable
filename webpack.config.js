@@ -12,7 +12,7 @@ module.exports = {
         umdNamedDefine: true
     },
     resolve: {
-        extensions: ['.ts']
+        extensions: ['.ts', '.js']
     },
     devtool: 'source-map',
     module: {
@@ -20,7 +20,6 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: 'awesome-typescript-loader',
-                exclude: /node_modules/,
                 query: {
                     declaration: false
                 }
