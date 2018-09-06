@@ -1,6 +1,6 @@
 {
   "name": "booltable",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Functional alternatives to complex and incongruent if/else statements",
   "main": "./dist/index.js",
   "scripts": {
