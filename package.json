@@ -1,7 +1,7 @@
 {
   "name": "booltable",
-  "version": "0.5.2",
-  "description": "Functional alternatives to complex and incongruent if/else statements",
+  "version": "0.5.3",
+  "description": "Functional alternatives to complex and incongruent conditional statements",
   "main": "./dist/index.js",
   "scripts": {
     "test": "jest --env=node",

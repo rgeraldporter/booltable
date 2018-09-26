@@ -6,19 +6,34 @@ BoolTable is an expressive alternative for complex and incongruous if/else condi
 
 It exposes three APIs: `Truth`, `Decision`, and `BoolTable`.
 
+## Summary of APIs
+
 ### `Truth`
 
-This API is akin to a truth table row, which allows one to specify any number of statements that may be true or false, and apply a boolean operator to the collection to achieve a result. For example, a table row of three items: `[true, true, true]` would return `true` for an `AND` operator, `false` for a `NOR` operator; a table row with `[true, false]` would return `false` for `AND`, and `true` for `XOR`.
+This API is akin to a [truth table](https://en.wikipedia.org/wiki/Truth_table) row, which allows one to specify any number of statements that may be true or false, and apply a boolean operator to the collection to achieve a result.
+
+For example:
+
+ * a table row of three items: `[true, true, true]` would return `true` for an `AND` operator, `false` for a `NOR` operator, etc;
+ * a table row with `[true, false]` would return `false` for `AND`, and `true` for `XOR`, `true` for `OR`, etc
 
 ### `Decision`
 
-This API is akin to a decision table, which allows one to specify an action when certain conditions evaluate as `true`. One can use `Truth` in concert to allow for complex and specific decisions.
+This API is akin to a [decision table](https://en.wikipedia.org/wiki/Decision_table), which allows one to specify an action when certain conditions evaluate as `true`. One can use `Truth` in concert to allow for complex and specific decisions.
+
+This can be used to indicate a list of actions that are triggered upon a complex set of conditions.
 
 ### `BoolTable`
 
 This API allows one to construct a more expressive conditions in the `Decision` table, for better logging and observability, and to avoid the necessity of adding comments explaining each complex evaluation.
 
-## Example
+This allows for more meaningful use of `Decision`, especially when used with a complex set of conditions.
+
+### Bringing them together
+
+Each of these are designed to be used together to avoid deeply nested `if`/`else`/`switch`/etc statements.
+
+## Examples
 
 ```js
 import { Truth, Decision, BoolTable } from 'booltable';
