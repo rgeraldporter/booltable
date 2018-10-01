@@ -43,12 +43,12 @@ If a thermostat is set to "cool", it will turn on air conditioning when below a 
 
 Let's visualize first in a decision table:
 
-| mode          | status        | temperature                        | action to take               |
-| ------------- | ------------- | ---------------------------------- | ---------------------------- |
-| set to "heat" | currently off | thermometer is below threshold     | turn the furnace on          |
-| set to "heat" | currently on  | thermometer is above threshold + 1 | turn the furnace off         |
-| set to "cool" | currently off | thermometer is above threshold     | turn the air conditioning on |
-| set to "cool" | curr          |
+| mode          | status        | temperature                        | action  to take               |
+|---------------|---------------|------------------------------------|-------------------------------|
+| set to "heat" | currently off | thermometer is below threshold     | turn the furnace on           |
+| set to "heat" | currently on  | thermometer is above threshold + 1 | turn the furnace off          |
+| set to "cool" | currently off | thermometer is above threshold     | turn the air conditioning on  |
+| set to "cool" | currently on  | thermometer is below threshold - 1 | turn the air conditioning off |
 
 ### Unoptomized `Decision`
 
