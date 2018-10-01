@@ -14,8 +14,8 @@ This API is akin to a [truth table](https://en.wikipedia.org/wiki/Truth_table) r
 
 For example:
 
- * a table row of three items: `[true, true, true]` would return `true` for an `AND` operator, `false` for a `NOR` operator, etc;
- * a table row with `[true, false]` would return `false` for `AND`, and `true` for `XOR`, `true` for `OR`, etc
+-   a table row of three items: `[true, true, true]` would return `true` for an `AND` operator, `false` for a `NOR` operator, etc;
+-   a table row with `[true, false]` would return `false` for `AND`, and `true` for `XOR`, `true` for `OR`, etc
 
 ### `Decision`
 
@@ -33,7 +33,275 @@ This allows for more meaningful use of `Decision`, especially when used with a c
 
 Each of these are designed to be used together to avoid deeply nested `if`/`else`/`switch`/etc statements.
 
-## Examples
+## Example: Thermostat
+
+A simple example to start with that most people can relate to is how a thermostat works.
+
+If a thermostat is set to "heat", it will turn on a furnace when below the threshold temperature. It will turn off when the temperature goes above the threshold, plus one.
+
+If a thermostat is set to "cool", it will turn on air conditioning when below a threshold temperature. It will turn off when the temperature goes below the threshold, minus one.
+
+Let's visualize first in a decision table:
+
+| mode          | status        | temperature                        | action to take               |
+| ------------- | ------------- | ---------------------------------- | ---------------------------- |
+| set to "heat" | currently off | thermometer is below threshold     | turn the furnace on          |
+| set to "heat" | currently on  | thermometer is above threshold + 1 | turn the furnace off         |
+| set to "cool" | currently off | thermometer is above threshold     | turn the air conditioning on |
+| set to "cool" | curr          |
+
+### Unoptomized `Decision`
+
+```js
+const turnOnFurnace = () => console.log('Turning on the furnace');
+const turnOffFurnace = () => console.log('Turning off the furnace');
+const turnOnAirConditioning = () =>
+    console.log('Turning on the air conditioning');
+const turnOffAirConditioning = () =>
+    console.log('Turning off the air conditioning');
+const nothingHappening = () => console.log('Nothing happening');
+
+const thermostat = conditions =>
+    Decision.of([
+        [
+            conditions.mode === 'heat' &&
+                conditions.operating === 0 &&
+                conditions.thermometer < conditions.thresholdTemp,
+            turnOnFurnace
+        ],
+        [
+            conditions.mode === 'heat' &&
+                conditions.operating === 1 &&
+                conditions.thermometer > conditions.thresholdTemp + 1,
+            turnOffFurnace
+        ],
+        [
+            conditions.mode === 'cool' &&
+                conditions.operating === 0 &&
+                conditions.thermometer > conditions.thresholdTemp,
+            turnOnAirConditioning
+        ],
+        [
+            conditions.mode === 'cool' &&
+                conditions.operating === 1 &&
+                conditions.thermometer < conditions.thresholdtemp - 1,
+            turnOffAirConditioning
+        ],
+        // a default response if no action is necessary
+        [true, nothingHappening]
+    ]);
+
+// example conditions, this will turn off the furnace:
+
+// get our action function
+const actionFn = thermostat({
+    mode: 'heat',
+    operating: 1,
+    thermometer: 21,
+    thresholdTemp: 19
+})
+    .run()
+    .join();
+
+// console:
+// > Turning off the furnace
+actionFn();
+```
+
+While this works, the boolean statements make this code more fragile than it needs to be. Let's group our conditions with `Truth`.
+
+## Adding `Truth`
+
+```js
+const thermostat2 = conditions =>
+    Decision.of([
+        [
+            Truth.of([
+                conditions.mode === 'heat',
+                conditions.operating === 0,
+                conditions.thermometer < conditions.thresholdTemp
+            ]).and(),
+            turnOnFurnace
+        ],
+        [
+            Truth.of([
+                conditions.mode === 'heat',
+                conditions.operating === 1,
+                conditions.thermometer > conditions.thresholdTemp + 1
+            ]).and(),
+            turnOffFurnace
+        ],
+        [
+            Truth.of([
+                conditions.mode === 'cool',
+                conditions.operating === 0,
+                conditions.thermometer > conditions.thresholdTemp
+            ]).and(),
+            turnOnAirConditioning
+        ],
+        [
+            Truth.of([
+                conditions.mode === 'cool',
+                conditions.operating === 1,
+                conditions.thermometer < conditions.thresholdtemp - 1
+            ]).and(),
+            turnOffAirConditioning
+        ],
+        [true, nothingHappening]
+    ]);
+
+// get our action function
+const actionFn2 = thermostat({
+    mode: 'cool',
+    operating: 0,
+    thermometer: 24,
+    thresholdTemp: 22
+})
+    .run()
+    .join();
+
+// console:
+// > Turning on the air conditioning
+actionFn2();
+```
+
+This is better as one does not need to follow a list of items followed by `&&`, but it is still a bit lengthy.
+
+Let's make it more expressive, using `Truth` in a clearer way.
+
+## Returning `Truth` via constant function expression
+
+```js
+const itIsGettingCold = conditions =>
+    Truth.of([
+        conditions.mode === 'heat',
+        conditions.operating === 0,
+        conditions.thermometer < conditions.thresholdTemp
+    ]).and();
+
+const itIsWarmEnough = conditions =>
+    Truth.of([
+        conditions.mode === 'heat',
+        conditions.operating === 1,
+        conditions.thermometer > conditions.thresholdTemp + 1
+    ]).and();
+
+const itIsGettingHot = conditions =>
+    Truth.of([
+        conditions.mode === 'cool',
+        conditions.operating === 0,
+        conditions.thermometer > conditions.thresholdTemp
+    ]).and();
+
+const itIsCoolEnough = conditions =>
+    Truth.of([
+        conditions.mode === 'cool',
+        conditions.operating === 1,
+        conditions.thermometer < conditions.thresholdtemp - 1
+    ]).and();
+
+const thermostat3 = conditions =>
+    Decision.of([
+        [itIsGettingCold(conditions), turnOnFurnace],
+        [itIsWarmEnough(conditions), turnOffFurnace],
+        [itIsGettingHot(conditions), turnOnAirConditioning],
+        [itIsCoolEnough(conditions), turnOffAirConditioning],
+        [true, nothingHappening]
+    ]);
+
+// get our action function
+const actionFn3 = thermostat({
+    mode: 'cool',
+    operating: 0,
+    thermometer: 22,
+    thresholdTemp: 22
+})
+    .run()
+    .join();
+
+// console:
+// > Nothing happening
+actionFn3();
+```
+
+This is much more expressive, and readable for any developer who returns to the code in the future.
+
+But what if we have a lot of options, and doing a camel-case `const` for every single option is beginning to look odd?
+
+This is where `BoolTable` can help with adopting the expressivity of a unit test.
+
+## Using a `BoolTable`
+
+```js
+const bt = conditions =>
+    BoolTable.of([
+        [
+            `It's getting too cold in here`,
+            Truth.of([
+                conditions.mode === 'heat',
+                conditions.operating === 0,
+                conditions.thermometer < conditions.thresholdTemp
+            ]).and()
+        ],
+        [
+            `It's warm enough now`,
+            Truth.of([
+                conditions.mode === 'heat',
+                conditions.operating === 1,
+                conditions.thermometer > conditions.thresholdTemp + 1
+            ]).and()
+        ],
+        [
+            `It's getting too hot in here`,
+            Truth.of([
+                conditions.mode === 'cool',
+                conditions.operating === 0,
+                conditions.thermometer > conditions.thresholdTemp
+            ]).and()
+        ],
+        [
+            `It's cool enough now`,
+            Truth.of([
+                conditions.mode === 'cool',
+                conditions.operating === 1,
+                conditions.thermometer < conditions.thresholdTemp - 1
+            ]).and()
+        ]
+    ]);
+
+const thermostat4 = table =>
+    Decision.of([
+        [table.q(`It's getting too cold in here`), turnOnFurnace],
+        [table.q(`It's warm enough now`), turnOffFurnace],
+        [table.q(`It's getting too hot in here`), turnOnAirConditioning],
+        [table.q(`It's cool enough now`), turnOffAirConditioning],
+        [true, nothingHappening]
+    ]);
+
+const condTable = bt({
+    mode: 'cool',
+    operating: 1,
+    thermometer: 21,
+    thresholdTemp: 23
+});
+
+// get our action function
+const actionFn4 = thermostat4(condTable)
+    .run()
+    .join();
+
+// console:
+// > Turning off the air conditioning
+actionFn4();
+```
+
+While this is slightly more code, it is more expressive and can reduce the need for comments in the code.
+
+## Old examples
+
+This are here so that there is something documenting more complex usage: other Boolean operators, returning all value results in `Decision` rather than just the first, passing values into an action function.
+
+These will be removed when new examples cover these kinds of cases.
 
 ```js
 import { Truth, Decision, BoolTable } from 'booltable';
@@ -237,13 +505,19 @@ const bt = ([x, y, z]) =>
         ['are things normal?', cond3([x, y, z])]
     ]);
 
-const makeDecisionExpanded = (vals) => // vals === Array [x, y, z], more readable and still memoizable
+const makeDecisionExpanded = (
+    vals // vals === Array [x, y, z], more readable and still memoizable
+) =>
     Decision.of([
         // condition(s), fn, argument
         // are/is interchangable
         [bt(vals).q('are all the readings high?'), warn, 'all readings high'],
         [bt(vals).q('is x high?'), warn, 'x is high'],
-        [bt(vals).q('are things normal?'), notice, 'all readings in normal range']
+        [
+            bt(vals).q('are things normal?'),
+            notice,
+            'all readings in normal range'
+        ]
     ]);
 ```
 
@@ -265,21 +539,19 @@ You can also use `Truth` for a ternary condtion, using one of the various `fork*
 
 ```js
 // second function is the one that will run here
-Truth.of([true, true, true])
-    .forkAnd(
-        () => console.error('false path'),
-        () => console.log('true path')
-    );
+Truth.of([true, true, true]).forkAnd(
+    () => console.error('false path'),
+    () => console.log('true path')
+);
 
 // first function will run here
-Truth.of([false, true])
-    .forkNor(
-        () => console.log('false path'),
-        () => console.error('true path')
-    );
+Truth.of([false, true]).forkNor(
+    () => console.log('false path'),
+    () => console.error('true path')
+);
 ```
 
-## More examples
+## More examples: unit tests
 
 Some more examples can be lifted from the unit tests.
 
