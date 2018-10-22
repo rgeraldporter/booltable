@@ -1,6 +1,6 @@
 {
   "name": "booltable",
-  "version": "0.5.14",
+  "version": "0.5.15",
   "description": "Functional alternatives to complex and incongruent conditional statements",
   "main": "dist/index",
   "typings": "dist/index",
@@ -8,7 +8,7 @@
     "test": "jest --env=node",
     "build": "tsc",
     "build-production": "tsc --build tsconfig-prod.json",
-    "prepublishOnly": "npm run build-production",
+    "prepublishOnly": "npm run build-production && npm run bundle",
     "bundle": "webpack --config webpack.config.js"
   },
   "author": "Robert Gerald Porter <rob@weeverapps.com>",
