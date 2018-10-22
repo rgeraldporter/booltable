@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "outDir": "./dist/",        // path to output directory
+        "outDir": "dist/",        // path to output directory
         "sourceMap": true,          // allow sourcemap support
         "declaration": true,                   /* Generates corresponding '.d.ts' file. */
         "strictNullChecks": true,   // enable strict null checks as a best practice
@@ -14,7 +14,7 @@
 
     },
     "include": [
-        "./src/**/*"
+        "src/**/*"
     ],
     "exclude": [
         "**/*.test.ts"
