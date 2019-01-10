@@ -479,7 +479,7 @@ testString.inspect();
 
 ## Decision
 
-`Decision.of([ [condition, (value | function) [, fnParameter], [...], ... ]]);`
+`Decision.of([ [condition, (value | function) [, fnParameter]], [...], ... ]]);`
 
 Create a decision table, which may either return a value, or execute a function with a given value.
 
