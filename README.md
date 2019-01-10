@@ -2,11 +2,19 @@
 
 [![Build Status](https://travis-ci.com/rgeraldporter/booltable.svg?branch=master)](https://travis-ci.com/rgeraldporter/booltable)
 
-BoolTable is an expressive alternative for complex and incongruous if/else conditional structures in Javascript. It allows one to build logical branches not unlike truth tables and decision tables.
+BoolTable is an expressive and functional alternative for complex and incongruous conditional structures in Javascript. It allows one to build logical branches not unlike truth tables and decision tables.
 
-It exposes three APIs: `Truth`, `Decision`, and `BoolTable`.
+With BoolTable you can write more reliable, consistent, expressive, observable, and testable condition branching.
 
-## Summary of APIs
+## Install
+
+```
+npm i booltable
+```
+
+## Summary of BoolTable APIs
+
+`booltable` exposes three APIs: `Truth`, `Decision`, and `BoolTable`.
 
 ### `Truth`
 
@@ -37,20 +45,35 @@ Each of these are designed to be used together to avoid deeply nested `if`/`else
 
 A simple example to start with that most people can relate to is how a thermostat works.
 
+Let's first take a sneak peak of what our final code will be, to give a sample of the expressivity BoolTable can add:
+
+```js
+const thermostat = table =>
+    Decision.of([
+        [table.q(`It's getting too cold in here`), turnOnFurnace],
+        [table.q(`It's warm enough now`), turnOffFurnace],
+        [table.q(`It's getting too hot in here`), turnOnAirConditioning],
+        [table.q(`It's cool enough now`), turnOffAirConditioning],
+        [true, nothingHappening]
+    ]);
+```
+
+### Premise
+
 If a thermostat is set to "heat", it will turn on a furnace when below the threshold temperature. It will turn off when the temperature goes above the threshold, plus one.
 
 If a thermostat is set to "cool", it will turn on air conditioning when below a threshold temperature. It will turn off when the temperature goes below the threshold, minus one.
 
-Let's visualize first in a decision table:
+Let's visualize first in an actual decision table:
 
-| mode          | status        | temperature                        | action  to take               |
-|---------------|---------------|------------------------------------|-------------------------------|
+| mode          | status        | temperature                        | action to take                |
+| ------------- | ------------- | ---------------------------------- | ----------------------------- |
 | set to "heat" | currently off | thermometer is below threshold     | turn the furnace on           |
 | set to "heat" | currently on  | thermometer is above threshold + 1 | turn the furnace off          |
 | set to "cool" | currently off | thermometer is above threshold     | turn the air conditioning on  |
 | set to "cool" | currently on  | thermometer is below threshold - 1 | turn the air conditioning off |
 
-### Unoptomized `Decision`
+### First pass: basic, unoptimized `Decision` example
 
 ```js
 const turnOnFurnace = () => console.log('Turning on the furnace');
@@ -108,9 +131,9 @@ const actionFn = thermostat({
 actionFn();
 ```
 
-While this works, the boolean statements make this code more fragile than it needs to be. Let's group our conditions with `Truth`.
+### Second pass: add hardening
 
-## Adding `Truth`
+While this works, the boolean statements make this code more fragile than it needs to be. Let's group our conditions with `Truth`.
 
 ```js
 const thermostat2 = conditions =>
@@ -169,7 +192,7 @@ This is better as one does not need to follow a list of items followed by `&&`, 
 
 Let's make it more expressive, using `Truth` in a clearer way.
 
-## Returning `Truth` via constant function expression
+## Third pass: optimizing readability with constant function expressions
 
 ```js
 const itIsGettingCold = conditions =>
@@ -230,7 +253,7 @@ But what if we have a lot of options, and doing a camel-case `const` for every s
 
 This is where `BoolTable` can help with adopting the expressivity of a unit test.
 
-## Using a `BoolTable`
+## Final pass: optimizing expressivity with `BoolTable`
 
 ```js
 const bt = conditions =>
@@ -296,6 +319,123 @@ actionFn4();
 ```
 
 While this is slightly more code, it is more expressive and can reduce the need for comments in the code.
+
+## The APIs
+
+If seeing something like `Decision.of`, `Truth.of` as an API looks unusual to you, that's ok! This is a oft-used pattern for functional libraries in Javascript, and the documentation here will attempt to cover anything you'll need to know.
+
+### `Truth`
+
+`Truth.of([ condition1, condition2, ...]);`
+
+Create a truth table. This allows you to collect multiple conditions and assess them with boolean logic.
+
+#### Boolean expression methods
+
+`.and()`, `.or()`, `.xor()`, `.nor()`
+
+Running any of these methods will return a `true` or `false` value.
+
+```js
+Truth.of([true, true]).and(); // === true : AND operation means all are true
+Truth.of([false, false]).and(); // === false
+Truth.of([true, false]).or(); // === true : OR operation means at least one is true
+Truth.of([false, false, false]).or(); // === false
+Truth.of([true, false, false]).xor(); // === true : XOR operation means at least one is true and at least one is false
+Truth.of([true, true, true]).xor(); // === false
+Truth.of([false, false, false]).nor(); // === true : NOR operation means all are false
+Truth.of([true, false, true]).nor(); // === false
+
+// applying an example
+const x = 2;
+// check a simple range
+Truth.of([x < 0, x > 3]).or(); // === false
+// check a simple range plus type
+Truth.of([x < 3, x > 0, typeof x !== 'string']).and(); // === true
+// validate `x` is not an unwanted type
+Truth.of([typeof x !== 'string', typeof x !== 'undefined']).and(); // === true, or, written another way....
+Truth.of([typeof x === 'string', typeof x === 'undefined']).nor(); // === true
+// check a complex range
+Truth.of([x > 1 && x < 6, x === 71, x > 656 && x < 765]).xor(); // === true
+
+// make the complex range more scalable and expressive!
+const lowRange = (y) => Truth.of([x > 1, x < 6]).and();
+const higherRange = (y) => Truth.of([x > 656, x < 765]).and();
+
+Truth.of([lowRange(x), x === 71, higherRange(x)]).xor(); // === true
+```
+
+#### Conditional function methods
+
+*The following uses the functional programming notions of `Left`/`L` (failure branch), and `Right`/`R` (successful branch) to be consistent with functional styles. In short, `L` = false, `R` = true. Failure first, then success.*
+
+`.forkAnd(functionL, functionR)`, `.forkOr(fL, fR)`, `.forkNor(fL, fR)`, `.forkXor(fL, fR)`
+
+The `fork` methods will run the first function provided if there is a `false` value, the second if there is a `true` value.
+
+Useful for replacing `if`/`else` ternary branching. "Run one function if false, another function if true", for example.
+
+```js
+const x = Truth.of([true, true]);
+
+x.forkAnd(
+    () => console.log('false branch, will NOT issue this console message!'),
+    () => console.log('true branch, will issue this console message!')
+);
+
+x.forkNor(
+    () => console.log('false branch, will issue this console message!'),
+    () => console.log('true branch, will NOT issue this console message!')
+);
+```
+
+Additionally, there are left (`fL`), and right (`fR`) -only versions that will run one function under the branch specified, and run no functions at all if that branch is not encountered.
+
+`.forkAndL(fL)`, `.forkAndR(fR)`
+`.forkOrL(fL)`, `.forkOrR(fR)`
+`.forkNorL(fL)`, `.forkNorR(fR)`
+`.forkXorL(fL)`, `.forkXorR(fR)`
+
+This is useful for replacing simple `if` conditions. "Run function if true", for example.
+
+```js
+const x = Truth.of([true, false]);
+
+x.forkAndL(() => console.log('true branch, will NOT issue this console message, or anything at all!'));
+
+x.forkAndR(() => console.log('false branch, will issue this console message!'));
+```
+
+### Inspection method
+
+*This is a simple functional concept for debugging purposes.*
+
+`.inspect()`
+
+In case you want a peek inside a `Truth` statement, you can use this to convert the value to a string.
+
+```js
+const a = 1;
+const x = Truth.of([a > 0, a > 100]);
+
+x.inspect(); // "Truth(true,false)"
+```
+
+### Other functional methods
+
+*Advanced section!*
+
+If you're familiar with functional programming, you might recognize `Truth` to be a monad. This means it comes with standard, out-of-the-box methods.
+
+`.ap(M)`, `.chain(f)`, `.map(f)`, `.join()`
+
+Those all do what you'd expect of a monad, they obey the monad laws. See the unit tests for examples, and proof of monad law compliance.
+
+`.concat(tM)`, `.head()`, `.tail()`, `.isEmpty()`
+
+Because this is a typed monad that contains an array (of Boolean values only), certain array-based methods have been added.
+
+Only `.concat` takes a parameter, and that parameter _must_ be another Truth monad.
 
 ## Old examples
 
