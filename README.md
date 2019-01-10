@@ -401,9 +401,9 @@ This is useful for replacing simple `if` conditions. "Run function if true", for
 ```js
 const x = Truth.of([true, false]);
 
-x.forkAndL(() => console.log('true branch, will NOT issue this console message, or anything at all!'));
+x.forkAndL(() => console.log('false branch, will issue this console message!'));
 
-x.forkAndR(() => console.log('false branch, will issue this console message!'));
+x.forkAndR(() => console.log('true branch, will NOT issue this console message, or do anything at all!'));
 ```
 
 ### Inspection method
