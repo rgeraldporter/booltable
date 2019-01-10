@@ -359,15 +359,15 @@ Truth.of([typeof x === 'string', typeof x === 'undefined']).nor(); // === true
 Truth.of([x > 1 && x < 6, x === 71, x > 656 && x < 765]).xor(); // === true
 
 // make the complex range more scalable and expressive!
-const lowRange = (y) => Truth.of([x > 1, x < 6]).and();
-const higherRange = (y) => Truth.of([x > 656, x < 765]).and();
+const lowRange = y => Truth.of([x > 1, x < 6]).and();
+const higherRange = y => Truth.of([x > 656, x < 765]).and();
 
 Truth.of([lowRange(x), x === 71, higherRange(x)]).xor(); // === true
 ```
 
 #### Conditional function methods
 
-*The following uses the functional programming notions of `Left`/`L` (failure branch), and `Right`/`R` (successful branch) to be consistent with functional styles. In short, `L` = false, `R` = true. Failure first, then success.*
+_The following uses the functional programming notions of `Left`/`L` (failure branch), and `Right`/`R` (successful branch) to be consistent with functional styles. In short, `L` = false, `R` = true. Failure first, then success._
 
 `.forkAnd(functionL, functionR)`, `.forkOr(fL, fR)`, `.forkNor(fL, fR)`, `.forkXor(fL, fR)`
 
@@ -403,12 +403,16 @@ const x = Truth.of([true, false]);
 
 x.forkAndL(() => console.log('false branch, will issue this console message!'));
 
-x.forkAndR(() => console.log('true branch, will NOT issue this console message, or do anything at all!'));
+x.forkAndR(() =>
+    console.log(
+        'true branch, will NOT issue this console message, or do anything at all!'
+    )
+);
 ```
 
 ### Inspection method
 
-*This is a simple functional concept for debugging purposes.*
+_This is a simple functional concept for debugging purposes._
 
 `.inspect()`
 
@@ -421,27 +425,122 @@ const x = Truth.of([a > 0, a > 100]);
 x.inspect(); // "Truth(true,false)"
 ```
 
-### Other functional methods
+## BoolTable
 
-*Advanced section!*
+`BoolTable.of([ [string, condition], [string, condition], ... ]);`
 
-If you're familiar with functional programming, you might recognize `Truth` to be a monad. This means it comes with standard, out-of-the-box methods.
+Create a descriptive conditions table. Each row takes two values, a `string` and a condition that evaluates to `true` or `false`.
+
+### Query method
+
+`.query(string)`, or `.q(string)`
+
+Simply pass a string and it will return its matching condition. Useful to create expressive condition queries.
+
+This API is best used in a `Decision` table, but the example below shows how it might work independent of that.
+
+```js
+const isEven = x => Truth.of([typeof x === 'number', x % 2 === 0]).and();
+const isOdd = x => Truth.of([typeof x === 'number', x % 2 !== 0]).and();
+
+const t = v =>
+    BoolTable.of([
+        ['the value is an even number', isEven(v)],
+        ['the value is an odd number', isOdd(v)],
+        ['the value is not a number', isNaN(v)]
+    ]);
+
+const testString = t('string');
+
+// > true
+console.log(testString.q('the value is not a number'));
+// > false
+console.log(testString.q('the value is an odd number'));
+// > false
+console.log(testString.q('the value is an even number'));
+```
+
+### Inspection method
+
+_This is a simple functional concept for debugging purposes._
+
+`.inspect()`
+
+In case you want a peek inside a `BoolTable` statement, you can use this to convert the value to a string.
+
+Extending the previous example:
+
+```js
+const testString = t('string');
+
+testString.inspect();
+// BoolTable(the value is an even number,false,the value is an odd number,false,the value is not a number,true)
+```
+
+## Decision
+
+`Decision.of([ [condition, (value | function) [, fnParameter], [...], ... ]]);`
+
+Create a decision table, which may either return a value, or execute a function with a given value.
+
+This is easier to show in an example than to document by normal means.
+
+```js
+const mergeObj = (objs) => objs.reduce((acc, cur) => Object.assign(acc, cur));
+const age = 22;
+const permissions = Decision.of([
+    [age > 15, { allowedToDrive: true }],
+    [age > 18, { allowedToVote: true }],
+    [age > 21, { allowedToDrinkAlcohol: true }],
+    [age > 65, { allowedSeniorsDiscount: true }]
+]).run('any').chain(mergeObj); // (chain takes resulting values and passes to a function)
+// > { "allowedToDrinkAlcohol": true, "allowedToDrive": true, "allowedToVote": true }
+```
+
+### Run method
+
+`.run(method)`
+
+This will run through the table using either a specified method, or by default, just the first `true` row.
+
+#### Methods
+
+`first` (default): Run only first `true` row encountered
+`last`: Run only the last `true` row encountered
+`any`: Run any `true` rows encountered, returning results as array
+`2`: (any positive integer) Run only the first 2 rows encountered, returning result as array
+``
+
+#### Notes
+
+There are two ways to use `Decision`: to return specific values, or to run specific functions (that may or may not return values).
+
+If you require values, you will need to follow `.run()` with an *unwrap* method like `.join()` or `.chain()`, otherwise they will be inaccessible. (If you do not require values back, you need not add an unwrap method call.)
+
+`.join()` will unwrap the results as they are. `.chain()` will pass them to a function. (*These are both concepts from functional programming.*)
+
+
+## Other functional methods (common to Truth, Decision, BoolTable)
+
+_Advanced section!_
+
+If you're familiar with functional programming, you might recognize `Truth`, `Decision`, and `BoolTable` to be monads. This means they comes with standard, out-of-the-box methods.
 
 `.ap(M)`, `.chain(f)`, `.map(f)`, `.join()`
 
 Those all do what you'd expect of a monad, they obey the monad laws. See the unit tests for examples, and proof of monad law compliance.
 
-`.concat(tM)`, `.head()`, `.tail()`, `.isEmpty()`
+`.concat(M)`, `.head()`, `.tail()`, `.isEmpty()`
 
-Because this is a typed monad that contains an array (of Boolean values only), certain array-based methods have been added.
+Because these are typed monads that contains an array, certain array-based methods have been added.
 
-Only `.concat` takes a parameter, and that parameter _must_ be another Truth monad.
+Only `.concat` takes a parameter, and that parameter _must_ be another monad of the same type.
 
-## Old examples
+## Example techniques
 
-This are here so that there is something documenting more complex usage: other Boolean operators, returning all value results in `Decision` rather than just the first, passing values into an action function.
+Below are some example techniques for how the API might be used.
 
-These will be removed when new examples cover these kinds of cases.
+### Returning a Decision from a function to make multiple types of queries
 
 ```js
 import { Truth, Decision, BoolTable } from 'booltable';
@@ -476,11 +575,16 @@ const result3 = makeDecision(101)
     .join();
 
 // result4 === [3.5, 4];
-// '2' means first two true conditions -- this can be given number
+// '2' means first two true conditions -- this can be given positive integer
 const result4 = makeDecision(0)
     .run(2)
     .join();
 
+```
+
+### Returning a `Truth` from a function to make multiple queries
+
+```js
 const data = {
     aa: 1,
     bb: true,
@@ -489,6 +593,8 @@ const data = {
     ee: false
 };
 
+// Taking an array parameter here allows memoization of the function
+// This means one could use a memoizer to ensure `result5` through `result8` only execute this function once
 const conditions = ([a, b, c]) => Truth.of([a, b, c]);
 
 // result5 === true
@@ -527,19 +633,18 @@ const result8 = conditions([
     data.cc.length
 ]).nor();
 
-// these can be combined!
-const makeDecision2 = x =>
-    Decision.of([
-        [Truth.of([x > 1, x < 0]).or(), 2], // is greater than 1 or less than 0
-        [Truth.of([x !== 0, typeof x === 'string']).nor(), 3], // is not 0 and not a string
-        // default, always true
-        [true, 10]
-    ]);
-
-// ... and so on
+// since the results evaluate to `true` or `false`, can be used in Decision table
+Decision.of([
+    [result5, 3],
+    [result6, 2],
+    [result7, 3],
+    [result8, 0],
+    // default, always returns true
+    [true, 10]
+]);
 ```
 
-## Truth Table
+## `Truth` as a truth table
 
 This is an example of how `Truth` can be used like a truth table, using the methods provided.
 
@@ -560,7 +665,7 @@ const logic3 = Truth.of([a < b, b === 4, c === a, d > 1000]);
 | logic2 | a < b  | b !== 4 | c > a   | d < 1000       | true   | true  | false  | false  |
 | logic3 | a < b  | b === 4 | c === a | d > 1000       | false  | false | true   | false  |
 
-Better yet, this can be also created using a more expressive API, `BoolTable`.
+This can be also created using a more expressive API, `BoolTable`.
 
 ```js
 const tt = BoolTable.of([
@@ -579,7 +684,7 @@ tt.q('is logic2 true with and?');
 tt.q('is logic3 true with xor?');
 ```
 
-## Decision Table
+## `Decision` as a deicision table
 
 This is an example of how `Decision` can be like a decision table.
 
@@ -635,7 +740,7 @@ const makeDecisionExpanded = ([x, y, z]) =>
     ]);
 ```
 
-Better yet, let's add some expressivity:
+Let's add some expressivity:
 
 ```js
 const bt = ([x, y, z]) =>
@@ -671,41 +776,13 @@ All these result in a decision table like this:
 
 This is a very basic example of a decision table, and is only using `.and()` in the calculation of true/false. One could have much more complex logic.
 
-## Truth as ternary
-
-You can also use `Truth` for a ternary condtion, using one of the various `fork*` functions:
-
-`forkOr`, `forkAnd`, `forkXor`, `forkNor` -- each take two functions as parameters, the first being the `false` condition, the second being the `true` condition.
-
-```js
-// second function is the one that will run here
-Truth.of([true, true, true]).forkAnd(
-    () => console.error('false path'),
-    () => console.log('true path')
-);
-
-// first function will run here
-Truth.of([false, true]).forkNor(
-    () => console.log('false path'),
-    () => console.error('true path')
-);
-```
-
-## More examples: unit tests
-
-Some more examples can be lifted from the unit tests.
-
-## Early days yet...
-
-This just got started. More documentation coming soon!
-
 ## Development
 
 Source is written in TypeScript. Run tests via `npm run test`.
 
 ## MIT License
 
-Copyright 2018 Robert Gerald Porter <mailto:rob@weeverapps.com>
+Copyright 2018-2019 Robert Gerald Porter <mailto:rob@weeverapps.com>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
