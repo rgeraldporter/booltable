@@ -1,6 +1,6 @@
 {
   "name": "booltable",
-  "version": "0.5.19",
+  "version": "0.5.20",
   "description": "Functional alternatives to complex and incongruent conditional statements",
   "main": "dist/index",
   "typings": "dist/index",
