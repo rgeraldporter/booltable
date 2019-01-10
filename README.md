@@ -391,9 +391,9 @@ x.forkNor(
 
 Additionally, there are left (`fL`), and right (`fR`) -only versions that will run one function under the branch specified, and run no functions at all if that branch is not encountered.
 
-`.forkAndL(fL)`, `.forkAndR(fR)`
-`.forkOrL(fL)`, `.forkOrR(fR)`
-`.forkNorL(fL)`, `.forkNorR(fR)`
+`.forkAndL(fL)`, `.forkAndR(fR)`\
+`.forkOrL(fL)`, `.forkOrR(fR)`\
+`.forkNorL(fL)`, `.forkNorR(fR)`\
 `.forkXorL(fL)`, `.forkXorR(fR)`
 
 This is useful for replacing simple `if` conditions. "Run function if true", for example.
@@ -505,11 +505,10 @@ This will run through the table using either a specified method, or by default, 
 
 #### Methods
 
-`first` (default): Run only first `true` row encountered
-`last`: Run only the last `true` row encountered
-`any`: Run any `true` rows encountered, returning results as array
+`first`: (default) Run only first `true` row encountered\
+`last`: Run only the last `true` row encountered\
+`any`: Run any `true` rows encountered, returning results as array\
 `2`: (any positive integer) Run only the first 2 rows encountered, returning result as array
-``
 
 #### Notes
 
