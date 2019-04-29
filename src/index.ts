@@ -39,6 +39,7 @@ const Truth = (x: Array<boolean>): TruthMonad => ({
     ap: (y: Monad): Monad => y.map(x),
     inspect: (): string => `Truth(${x})`,
     join: (): boolean | Array<boolean> => x,
+    emit: (): boolean | Array<boolean> => x,
     concat: (o: TruthMonad): TruthMonad =>
         o.chain((r: any): TruthMonad => Truth((x as Array<boolean>).concat(r))),
     head: (): boolean | Array<boolean> =>
@@ -159,6 +160,7 @@ const Decision = (x: DecisionTable): DecisionMonad => ({
     ap: (y: Monad): Monad => y.map(x),
     inspect: (): string => `Decision(${x})`,
     join: (): DecisionTable => x,
+    emit: (): DecisionTable => x,
     concat: (o: DecisionMonad): DecisionMonad =>
         o.chain(
             (r: DecisionMonad): DecisionMonad =>
@@ -212,6 +214,7 @@ const BoolTable = (x: BoolTable): BoolTableMonad => ({
     ap: (y: Monad): Monad => y.map(x),
     inspect: (): string => `BoolTable(${x})`,
     join: (): BoolTable => x,
+    emit: (): BoolTable => x,
     concat: (o: BoolTableMonad): BoolTableMonad =>
         o.chain(
             (r: any): BoolTableMonad => BoolTable((x as BoolTable).concat(r))
